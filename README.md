@@ -257,3 +257,40 @@ The JRM makes that structure explicit, compressible, and transferable.
 ## 14. One-Line Summary
 
 The Java Repository Map turns implicit architectural knowledge into a first-class artifact, so automated tools can change systems without breaking them.
+
+---
+
+## 15. Reference Implementation (JRM)
+
+This repository now includes a lightweight reference implementation in `jrm/` that generates a
+JSON map for the bundled Quarkus sample (`code-with-quarkus`).
+
+### How it works
+
+| Requirement | Implementation |
+| --- | --- |
+| Dependency shape | Uses `jdeps` against `target/classes` when available; falls back to import-level package edges from source. |
+| Symbol indexing | Extracts packages, types, annotations, and public members from Java source. |
+| Usage frequency | Counts symbol references across the repository (static analysis heuristic). |
+| Build metadata | Parses `pom.xml` for coordinates, dependencies, plugins, and Quarkus features. |
+
+### Run the tool
+
+```bash
+mvn -f jrm/pom.xml -q package
+java -jar jrm/target/java-repository-map-0.1.0-SNAPSHOT.jar --project code-with-quarkus --output jrm-output.json
+```
+
+The resulting JSON includes `dependencyShape`, `symbolIndex`, `usageFrequency`, and `buildMetadata`
+sections so you can feed the map to downstream tooling.
+
+### JRM Implementation TODO
+
+- [x] Dependency shape via `jdeps` with source import fallback.
+- [x] Symbol indexing for packages, types, annotations, and public members.
+- [x] Usage-frequency heuristic from static source analysis.
+- [x] Build metadata extraction from `pom.xml` (coordinates, dependencies, plugins, Quarkus features).
+- [ ] Incremental updates based on VCS diffs.
+- [ ] Importance scoring (fan-in/fan-out, depth, annotation density).
+- [ ] Stable identifiers across multi-module builds.
+- [ ] Output size budget controls and lossy projection tuning.
